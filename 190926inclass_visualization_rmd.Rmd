@@ -130,6 +130,7 @@ weather_df %>%
 ```
 
 Violin plot can be useful, sometimes. Can be used for data doublecheck.
+
 ```{r violin}
 weather_df %>% 
   ggplot(aes(x = name, y = tmax)) +
@@ -139,6 +140,7 @@ weather_df %>%
 
 Ridge plots? Useful for multiple group distribution.
 Once extremely popular in 2017, only for 3 weeks.
+
 ```{r ridge plots}
 weather_df %>% 
   ggplot(aes(x = tmax, y = name, fill = name)) +
@@ -146,4 +148,13 @@ weather_df %>%
 #Careful about the x and y assignment
 ```
 
+Let's try to save something. 
+```{r save the plot}
+weather_ridge = 
+  weather_df %>% 
+    ggplot(aes(x = tmax, y = name, fill = name)) +
+    geom_density_ridges(alpha = 0.25)
+
+ggsave("weather ridge plot.pdf", weather_ridge)
+```
 
