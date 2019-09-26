@@ -56,7 +56,7 @@ weather_df %>%
 ```
 
 Facets
-```{r pipe}
+```{r pipe222}
 weather_df %>% 
   filter(name == "CentralPark_NY" | name == "Waikiki_HA") %>% 
     ggplot(aes(x = tmin, y = tmax) ) + 
@@ -157,4 +157,17 @@ weather_ridge =
 
 ggsave("weather ridge plot.pdf", weather_ridge)
 ```
+
+Also, adjust the size of the plots are allowed.
+
+```{r, fig.width = 6}
+weather_df %>% 
+  filter(name == "CentralPark_NY" | name == "Waikiki_HA") %>% 
+    ggplot(aes(x = tmin, y = tmax) ) + 
+    geom_point( aes(col = name), alpha = 0.4 ) +
+    geom_smooth( aes(col = name), se = F ) 
+#assigned inside the {} big brackets
+
+```
+
 
