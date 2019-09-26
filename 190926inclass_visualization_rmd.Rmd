@@ -1,0 +1,16 @@
+---
+title: "190926_visiualization"
+author: "Gavin Ko"
+date: "9/26/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r library}
+library(tidyverse)
+library(ggridges)
+
+```
+Here we are at 
