@@ -20,7 +20,7 @@ Here we are at VIS and EDA!
 ```{r weather data loading}
 weather_df = 
   rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"), #three sites
-                      var = c("PRCP", "TMIN", "TMAX"), #humidity, minimum temp, highest temp
+                      var = c("PRCP", "TMIN", "TMAX"), #humidity, minimumtemp, highesttemp
                       date_min = "2017-01-01",
                       date_max = "2017-12-31") %>%
   mutate(
@@ -76,5 +76,74 @@ weather_df %>%
 
 ```
 
+You can remove any layer of geom, pick and choose what you want to show.
+```{r reduced}
+weather_df %>% 
+  ggplot( aes(x = date, y = tmax, col = name) ) +
+  geom_smooth(size = 2, se = F)
+
+```
+
+2D scatter plot
+```{r 2D}
+weather_df %>% 
+  ggplot( aes(x = tmin, y = tmax, col = name) ) + 
+  geom_bin2d() 
+#or geom_hex(), but you gotta install another package for this
+```
+
+##More kinds of plots!
+
+```{r histogram}
+weather_df %>% 
+  ggplot(aes(x = tmax, fill = name)) + 
+  geom_histogram(position = "dodge")
+#when you indicate col >> hollow, fill >> filled color
+#position dodge is to make the histograms dodge eachother
+
+```
+
+```{r histogram with gp comparison}
+weather_df %>% 
+  ggplot(aes(x = tmax, fill = name)) + 
+  geom_histogram() + 
+  facet_grid(. ~ name)
+
+```
+
+We can also put density plot, which shows a better distribution trend
+
+```{r density}
+weather_df %>% 
+  ggplot(aes(x = tmax, fill = name)) + 
+  geom_density(alpha = 0.3) 
+
+```
+
+What about boxplot?
+
+```{r boxplot}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmax)) +
+  geom_boxplot()
+
+```
+
+Violin plot can be useful, sometimes. Can be used for data doublecheck.
+```{r violin}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmax)) +
+  geom_violin()
+
+```
+
+Ridge plots? Useful for multiple group distribution.
+Once extremely popular in 2017, only for 3 weeks.
+```{r ridge plots}
+weather_df %>% 
+  ggplot(aes(x = tmax, y = name, fill = name)) +
+  geom_density_ridges(alpha = 0.25)
+#Careful about the x and y assignment
+```
 
 
