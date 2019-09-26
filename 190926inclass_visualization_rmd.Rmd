@@ -7,10 +7,74 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-```{r library}
+
 library(tidyverse)
 library(ggridges)
+```
+ggridges is a good plug in for ggplot that doesn't overwrite anything important
+and give it a little extra merits.
+
+Here we are at VIS and EDA!
+
+## Create the weather data
+```{r weather data loading}
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"), #three sites
+                      var = c("PRCP", "TMIN", "TMAX"), #humidity, minimum temp, highest temp
+                      date_min = "2017-01-01",
+                      date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+weather_df
 
 ```
-Here we are at 
+
+## Create a ggplot for that
+
+Basic scatter plot is like this, which Jeff doesn't use pretty often.
+```{r ggplot}
+ggplot(weather_df, aes(x = tmin, y = tmax, col = name)) + geom_point()
+
+```
+
+Alternative wat to make this plot with pipe, and filter
+```{r pipe}
+weather_df %>% 
+  filter(name == "CentralPark_NY" | name == "Waikiki_HA") %>% 
+    ggplot(aes(x = tmin, y = tmax) ) + 
+    geom_point( aes(col = name), alpha = 0.4 ) +
+    geom_smooth( aes(col = name), se = F )
+#alpha is to control the transparency of dots
+#geom_smooth is to draw the trend of the general data
+#se indicates not showing the gray bands
+
+```
+
+Facets
+```{r pipe}
+weather_df %>% 
+  filter(name == "CentralPark_NY" | name == "Waikiki_HA") %>% 
+    ggplot(aes(x = tmin, y = tmax) ) + 
+    geom_point( aes(col = name), alpha = 0.4 ) +
+    geom_smooth( aes(col = name), se = F ) + 
+    facet_grid(. ~ name)
+
+```
+
+Analysis according to dates
+```{r dates}
+weather_df %>% 
+  ggplot( aes(x = date, y = tmax, col = name) ) +
+  geom_point(aes(size = prcp), alpha = 0.35) +
+  geom_smooth(size = 2, se = F)
+#size indicates the size of point, and can be assigned with factors
+
+```
+
+
+
