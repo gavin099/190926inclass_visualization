@@ -72,8 +72,7 @@ weather_df
 
 ## Create a ggplot for that
 
-Basic scatter plot is like this, which Jeff doesn’t use pretty
-often.
+Basic scatter plot is like this, which Jeff doesn’t use pretty often.
 
 ``` r
 ggplot(weather_df, aes(x = tmin, y = tmax, col = name)) + geom_point()
