@@ -1,0 +1,183 @@
+---
+title: "191001_visualization"
+author: "Gavin Ko"
+date: "10/1/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(viridis)
+library(patchwork)
+```
+
+## Create the weather data
+```{r weather data loading}
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"), #three sites
+                      var = c("PRCP", "TMIN", "TMAX"), #humidity, minimumtemp, highesttemp
+                      date_min = "2017-01-01",
+                      date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+weather_df
+
+```
+
+## Plot a scatter
+```{r adding lables and add specific data points, warning = FALSE}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  labs(
+    title = "Temp plot",
+    xlab = "Minimum temperature (C)",
+    ylab = "Maximum temperature",
+    caption = "Data from NOAA via rnoaa pakcage"
+  ) +
+  scale_x_continuous(
+    breaks = c(-15, 0, 20), #adding data points
+    labels = c("-15C", "0C", "20C") #refine their respective lables
+  ) + 
+  scale_y_continuous( #you can also do data transformation in ggplot directly 
+    trans = "sqrt"
+  )
+#Alternative of sqrt transforamtion : 
+#scale_y_sqrt()
+
+```
+
+## Change the defult colors
+Scale can be really useful in all aspects.
+```{r adjusting colors, warning = FALSE}
+ggplot_base = weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  labs(
+    title = "Temp plot",
+    xlab = "Minimum temperature (C)",
+    ylab = "Maximum temperature",
+    caption = "Data from NOAA via rnoaa pakcage"
+  ) +
+  #scale_color_hue( #adjustment of colors
+    #name = "Location", #legend main title
+    #h = c(50,255) #a BAD way to put colors inside the points
+  viridis::scale_color_viridis(
+  name = "Location",
+  labels = c("CentralPark","Waikiki","Waterhole"),
+  discrete = T
+  )
+
+
+```
+Since the original color of ggplot is barely acceptable, we now utilize viridis packages.
+
+Let's do more about the legends parameters.
+
+```{r change the legends}
+ggplot_base + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+#Order does matter. Overarching things go first, then the tweeking stuff.
+
+```
+
+Inclass question: how do we check the NA values quickly?
+```{r check NA data}
+weather_df %>% 
+  filter(is.na(tmin))
+
+```
+
+## more than one dataset
+
+```{r stacking plots}
+central_park = 
+  weather_df %>% 
+  filter(name == "CentralPark_NY")
+
+waikiki = 
+  weather_df %>% 
+  filter(name == "Waikiki_HA")
+
+waterhole =
+  weather_df %>% 
+  filter(name == "Waterhole_WA")
+
+ggplot(data = waikiki, aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp)) + 
+  geom_line(data = central_park)
+
+```
+(Brief aside about colors)
+
+```{r specify the color}
+waikiki %>% 
+  ggplot(aes(x = date, y = tmax)) + 
+  geom_point(color = "navy")
+#color statement should be in point argument. Don't ask why, it's ggplot.
+  
+```
+## Panels
+
+```{r}
+tmax_tmin_p = 
+  weather_df %>% 
+  ggplot(aes(x = tmax, y = tmin, color = name)) + 
+  geom_point(alpha = .5) +
+  theme(legend.position = "none")
+
+prcp_dens_p = 
+  weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+tmax_date_p = 
+  weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom")
+
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
+```
+
+## Data manipulation
+```{r}
+weather_df %>% 
+  mutate(
+    name = factor(name),
+    name = fct_reorder(name, tmax) #reorder the factors
+  ) %>% 
+  ggplot(aes(x = name, y = tmax, color = name)) +
+  geom_boxplot()
+
+```
+
+## Restructure then plot
+```{r}
+weather_df %>% 
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation",
+    values_to = "temp"
+  ) %>% 
+  ggplot(aes(x = temp, fill = observation)) + 
+  geom_density(alpha = .5) +
+  facet_grid(~name) + #create multiple comparison
+  viridis::scale_fill_viridis(discrete = TRUE)
+
+```
+
+
+
+
+
